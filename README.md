@@ -47,15 +47,12 @@ This project demonstrates **OWASP A07:2021 - Identification and Authentication F
 ```
 POST /api/vulnerable/register
 POST /api/vulnerable/login
-POST /api/vulnerable/forgot-password
 ```
 
 ### Secure Endpoints
 ```
 POST /api/secure/register
 POST /api/secure/login
-POST /api/secure/forgot-password
-GET  /api/secure/lockout-status/{username}
 ```
 
 ## Architecture
