@@ -61,7 +61,9 @@ GET  /api/secure/lockout-status/{username}
 ## Architecture
 
 **Backend:** .NET 9 + ASP.NET Core + PostgreSQL + JWT
+
 **Frontend:** Angular 17 + TypeScript + nginx
+
 **Infrastructure:** Docker + Docker Compose
 
 ## Resources
