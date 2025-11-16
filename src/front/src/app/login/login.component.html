@@ -1,0 +1,53 @@
+<div class="container">
+  <div class="login-box">
+    <h2>Connexion</h2>
+    
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="form-group">
+        <label for="username">Nom d'utilisateur</label>
+        <input 
+          type="text" 
+          id="username" 
+          name="username" 
+          [(ngModel)]="username" 
+          required
+          [disabled]="isLoading"
+          class="form-control"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="password" 
+          required
+          [disabled]="isLoading"
+          class="form-control"
+        >
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-error">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div>
+
+      <button 
+        type="submit" 
+        [disabled]="isLoading || !loginForm.valid"
+        class="btn btn-primary"
+      >
+        {{ isLoading ? 'Connexion...' : 'Se connecter' }}
+      </button>
+    </form>
+
+    <div class="register-link">
+      <p>Pas encore de compte ? <a routerLink="/register">Créer un compte</a></p>
+    </div>
+  </div>
+</div>
