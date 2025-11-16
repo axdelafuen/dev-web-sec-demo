@@ -99,6 +99,32 @@ namespace DevWebSecDemo.Business
         }
 
         /// <summary>
+        /// Delete all user from database.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellationToken.</param>
+        public async Task DaleteAllUsersAsync(CancellationToken cancellationToken)
+        {
+            await _unitOfWork.DbContext.Users.ExecuteDeleteAsync(cancellationToken);
+            var result = _unitOfWork.SaveChanges();
+
+            if (result == -1)
+            {
+                throw new ArgumentException($"{ERROR_PREFIX}USER_DELETION: An unexpected error occurred.");
+            }
+        }
+
+        /// <summary>
+        /// List all user from database.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellationToken.</param>
+        public async Task<List<User>> ListAllUsersAsync(CancellationToken cancellationToken)
+        {
+            var users = await _unitOfWork.DbContext.Users.ToListAsync(cancellationToken);
+
+            return users;
+        }
+
+        /// <summary>
         /// Create a salt with the desired size.
         /// </summary>
         /// <param name="size">Salt size</param>

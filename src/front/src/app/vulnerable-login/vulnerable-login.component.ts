@@ -81,7 +81,6 @@ export class VulnerableLoginComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        // VULNERABILITY: Detailed error messages are displayed
         this.errorMessage = error.error?.message || 'Connection error';
         this.addLog(`[${timestamp}] FAILED - ${error.error?.message || 'Error'}`, 'error');
       }
@@ -123,9 +122,17 @@ export class VulnerableLoginComponent implements OnInit {
     }
   }
 
-  clearLogs(): void {
-    this.logs = [];
-    this.attemptCount = 0;
+  clearLogs(type?: 'info' | 'success' | 'error'): void {
+    if (type) {
+      this.logs = this.logs.filter(log => log.type !== type);
+    } else {
+      this.logs = [];
+      this.attemptCount = 0;
+    }
+  }
+
+  getLogsByType(type: 'info' | 'success' | 'error'): { type: string, message: string }[] {
+    return this.logs.filter(log => log.type === type);
   }
 
   onRegister(): void {

@@ -33,6 +33,7 @@ export class SecureLoginComponent implements OnInit {
   isLoadingPasswords: boolean = false;
 
   private apiUrl = 'http://localhost:8080/api/secure';
+  private adminApiUrl = 'http://localhost:8080/api/admin';
 
   constructor(
     private http: HttpClient,
@@ -60,7 +61,7 @@ export class SecureLoginComponent implements OnInit {
   checkLockoutStatus(): void {
     if (!this.username) return;
 
-    this.http.get(`${this.apiUrl}/lockout-status/${this.username}`).subscribe({
+    this.http.get(`${this.adminApiUrl}/lockout-status/${this.username}`).subscribe({
       next: (response: any) => {
         this.isLocked = response.isLocked;
         this.remainingAttempts = response.remainingAttempts;
@@ -112,7 +113,6 @@ export class SecureLoginComponent implements OnInit {
           this.addLog(`[${timestamp}] FAILED - ${error.error?.message || 'Error'}`, 'error');
         }
 
-        // Update lockout status
         setTimeout(() => this.checkLockoutStatus(), 500);
       }
     });
@@ -153,9 +153,17 @@ export class SecureLoginComponent implements OnInit {
     }
   }
 
-  clearLogs(): void {
-    this.logs = [];
-    this.attemptCount = 0;
+  clearLogs(type?: 'info' | 'success' | 'error'): void {
+    if (type) {
+      this.logs = this.logs.filter(log => log.type !== type);
+    } else {
+      this.logs = [];
+      this.attemptCount = 0;
+    }
+  }
+
+  getLogsByType(type: 'info' | 'success' | 'error'): { type: string, message: string }[] {
+    return this.logs.filter(log => log.type === type);
   }
 
   onRegister(): void {

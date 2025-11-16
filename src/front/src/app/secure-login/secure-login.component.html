@@ -4,7 +4,7 @@
     <div class="login-panel">
       <div class="header">
         <button class="back-btn" (click)="goBack()">← Back</button>
-        <h2>Secure Version</h2>
+        <br>
         <div class="security-badge">Secure</div>
       </div>
 
@@ -18,7 +18,6 @@
             [(ngModel)]="username" 
             required
             [disabled]="isLoading"
-            (blur)="checkLockoutStatus()"
             placeholder="Enter username"
           >
         </div>
@@ -36,14 +35,6 @@
           >
         </div>
 
-        <div *ngIf="isLocked" class="alert alert-warning">
-          Account locked for {{ lockoutMinutes }} minute(s)
-        </div>
-
-        <div *ngIf="!isLocked && remainingAttempts < 5" class="alert alert-info">
-          {{ remainingAttempts }} attempt(s) remaining
-        </div>
-
         <div *ngIf="errorMessage" class="alert alert-error">
           {{ errorMessage }}
         </div>
@@ -55,7 +46,7 @@
         <div class="button-group">
           <button 
             type="submit" 
-            [disabled]="isLoading || !loginForm.valid || isLocked"
+            [disabled]="isLoading || !loginForm.valid"
             class="btn btn-primary"
           >
             {{ isLoading ? 'Loading...' : 'Login' }}
@@ -124,22 +115,56 @@
       </div>
     </div>
 
-    <!-- Right Panel: Activity Logs -->
-    <div class="logs-panel">
-      <div class="logs-header">
-        <h3>Activity Logs</h3>
-        <button class="btn-clear" (click)="clearLogs()">Clear</button>
-      </div>
-      
-      <div class="logs-container">
-        <div *ngFor="let log of logs" class="log-entry" 
-             [class.log-info]="log.type === 'info'" 
-             [class.log-success]="log.type === 'success'" 
-             [class.log-error]="log.type === 'error'">
-          {{ log.message }}
+    <!-- Logs Panels -->
+    <div class="logs-panels">
+      <!-- Info Logs -->
+      <div class="logs-panel logs-panel-info">
+        <div class="logs-header">
+          <h3>Info</h3>
+          <button class="btn-clear" (click)="clearLogs('info')">Clear</button>
         </div>
-        <div *ngIf="logs.length === 0" class="log-empty">
-          No activity yet
+        
+        <div class="logs-container">
+          <div *ngFor="let log of getLogsByType('info')" class="log-entry log-info">
+            {{ log.message }}
+          </div>
+          <div *ngIf="getLogsByType('info').length === 0" class="log-empty">
+            No info yet
+          </div>
+        </div>
+      </div>
+
+      <!-- Success Logs -->
+      <div class="logs-panel logs-panel-success">
+        <div class="logs-header">
+          <h3>Success</h3>
+          <button class="btn-clear" (click)="clearLogs('success')">Clear</button>
+        </div>
+        
+        <div class="logs-container">
+          <div *ngFor="let log of getLogsByType('success')" class="log-entry log-success">
+            {{ log.message }}
+          </div>
+          <div *ngIf="getLogsByType('success').length === 0" class="log-empty">
+            No success yet
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Logs -->
+      <div class="logs-panel logs-panel-error">
+        <div class="logs-header">
+          <h3>Errors</h3>
+          <button class="btn-clear" (click)="clearLogs('error')">Clear</button>
+        </div>
+        
+        <div class="logs-container">
+          <div *ngFor="let log of getLogsByType('error')" class="log-entry log-error">
+            {{ log.message }}
+          </div>
+          <div *ngIf="getLogsByType('error').length === 0" class="log-empty">
+            No errors yet
+          </div>
         </div>
       </div>
     </div>
