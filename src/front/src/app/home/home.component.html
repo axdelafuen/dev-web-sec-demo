@@ -1,0 +1,78 @@
+<div class="container">
+  <div class="header">
+    <h1>OWASP A07:2021 Demo</h1>
+    <h2>Identification and Authentication Failures</h2>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-card vulnerable-card">
+      <div class="card-header">
+        <h3>Vulnerable Version</h3>
+      </div>
+
+      <div class="card-action">
+        <button class="btn btn-danger" (click)="navigateToVulnerable()">
+          Test Vulnerable Version →
+        </button>
+      </div>
+
+      <div class="card-body">
+        <ul class="vulnerability-list">
+          <li>No rate limiting (brute force attacks possible)</li>
+          <li>Detailed error messages (username enumeration)</li>
+          <li>No account lockout mechanism</li>
+          <li>Weak password policy (accepts "123")</li>
+          <li>Exposed detailed logs</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="demo-card secure-card">
+      <div class="card-header">
+        <h3>Secure Version</h3>
+      </div>
+
+      <div class="card-action">
+        <button class="btn btn-success" (click)="navigateToSecure()">
+          Test Secure Version →
+        </button>
+      </div>
+
+      <div class="card-body">
+        <ul class="security-list">
+          <li>Rate limiting (5 attempts / 5 min per IP)</li>
+          <li>Account lockout (15 min after 5 failures)</li>
+          <li>Generic error messages (no enumeration)</li>
+          <li>Strong password policy (8+ chars, complexity)</li>
+          <li>Secure anonymized logging</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h3>About A07:2021 - Identification and Authentication Failures</h3>
+    <div class="info-content">
+      <p>
+        Authentication failures can allow attackers to compromise passwords, keys, session tokens, 
+        or exploit implementation flaws to assume other users' identities.
+      </p>
+      
+      <div class="recommendations">
+        <h4>OWASP Recommendations:</h4>
+        <ol>
+          <li>Implement multi-factor authentication (MFA)</li>
+          <li>Never deploy with default credentials</li>
+          <li>Validate password strength</li>
+          <li>Limit failed authentication attempts</li>
+          <li>Use secure session management</li>
+          <li>Log and monitor suspicious attempts</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Demo OWASP A07:2021</p>
+  </footer>
+</div>

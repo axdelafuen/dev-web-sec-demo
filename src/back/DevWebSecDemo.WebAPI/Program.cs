@@ -1,6 +1,7 @@
 using DevWebSecDemo.Business;
 using DevWebSecDemo.Providers;
 using DevWebSecDemo.WebAPI.Authentication;
+using DevWebSecDemo.WebAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -39,6 +40,10 @@ builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(conn
 builder.Services.AddTransient<UnitOfWork>();
 builder.Services.AddTransient<TokenProvider>();
 builder.Services.AddTransient<UserService>();
+
+// Add security services for secure endpoints
+builder.Services.AddSingleton<RateLimitingService>();
+builder.Services.AddSingleton<AccountLockoutService>();
 
 builder.Services.AddCors(options => options.AddPolicy(name: "corsPolicy", builder =>
 {
