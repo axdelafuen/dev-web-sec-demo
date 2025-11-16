@@ -9,7 +9,7 @@ namespace DevWebSecDemo.WebAPI.Services
     public class RateLimitingService
     {
         private readonly ConcurrentDictionary<string, List<DateTime>> _attemptLog = new();
-        private readonly int _maxAttemptsPerWindow = 5; // Max attempts
+        private readonly int _maxAttemptsPerWindow = 10; // Max attempts
         private readonly TimeSpan _timeWindow = TimeSpan.FromMinutes(5); // Time window
 
         /// <summary>

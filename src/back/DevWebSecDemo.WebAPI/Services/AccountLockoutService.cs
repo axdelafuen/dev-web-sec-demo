@@ -23,14 +23,7 @@ namespace DevWebSecDemo.WebAPI.Services
                 {
                     return true;
                 }
-                else
-                {
-                    // Lockout expired, clean up
-                    _lockoutInfo.TryRemove(username.ToLower(), out _);
-                    return false;
-                }
             }
-
             return false;
         }
 

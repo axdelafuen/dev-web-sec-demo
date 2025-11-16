@@ -65,14 +65,16 @@ namespace DevWebSecDemo.WebAPI.Controllers
         public async Task<ActionResult<TokenResponse>> LoginAsync([FromBody] UserIdentity loginRequest, CancellationToken cancellationToken = default)
         {
             var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var isRateLimited = _rateLimitingService.IsRateLimited(clientIp);
+            var isLockedOut = _accountLockoutService.IsLockedOut(loginRequest.Username);
 
-            if (_rateLimitingService.IsRateLimited(clientIp))
+            if (isRateLimited)
             {
                 _logger.LogWarning($"Rate limit exceeded for IP: {clientIp}");
                 return StatusCode(429, new { message = "Too many attempts. Please try again later." });
             }
 
-            if (_accountLockoutService.IsLockedOut(loginRequest.Username))
+            if (isLockedOut)
             {
                 var lockoutTime = _accountLockoutService.GetLockoutTimeRemaining(loginRequest.Username);
                 _logger.LogWarning($"Login attempt on locked account");
