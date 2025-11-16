@@ -54,12 +54,12 @@ namespace DevWebSecDemo.Business
 
             if (user == null || user.Password == null)
             {
-                throw new ArgumentException($"{ERROR_PREFIX}AUTHENTICATION_FAILED: No administrator exist in database with email {username}.");
+                throw new ArgumentException($"{ERROR_PREFIX}AUTHENTICATION_FAILED: No user exist in database with name '{username}'.");
             }
 
             if (!VerifyPassword(password, user.Password))
             {
-                throw new ArgumentException($"{ERROR_PREFIX}AUTHENTICATION_FAILED: Invalid password for administrator with email {username}.");
+                throw new ArgumentException($"{ERROR_PREFIX}AUTHENTICATION_FAILED: Invalid password for user with name '{username}'.");
             }
         }
 
@@ -73,7 +73,13 @@ namespace DevWebSecDemo.Business
         {
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                throw new ArgumentException($"{ERROR_PREFIX}ADMIN_CREATION: Provided email or password is empty.");
+                throw new ArgumentException($"{ERROR_PREFIX}USER_CREATION: Provided username or password is empty.");
+            }
+
+            var userInDb = _unitOfWork.DbContext.Users.Where(u => u.Username == username).FirstOrDefault();
+            if (userInDb != null)
+            {
+                throw new ArgumentException($"{ERROR_PREFIX}USER_CREATION: An account with username: {username} already exist.");
             }
 
             string hashedPassword = HashPassword(password);
@@ -88,7 +94,7 @@ namespace DevWebSecDemo.Business
 
             if (result == -1)
             {
-                throw new ArgumentException($"{ERROR_PREFIX}ADMIN_CREATION: An account with email: {username} already exist.");
+                throw new ArgumentException($"{ERROR_PREFIX}USER_CREATION: An account with username: {username} already exist.");
             }
         }
 

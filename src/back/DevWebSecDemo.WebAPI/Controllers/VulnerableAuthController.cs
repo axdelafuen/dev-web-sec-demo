@@ -70,7 +70,7 @@ namespace DevWebSecDemo.WebAPI.Controllers
                 };
 
                 // Log success with detailed info (visible in demo)
-                _logger.LogInformation($"✓ Successful login for user: {userIdentity.Username}");
+                _logger.LogInformation($"Successful login for user: {userIdentity.Username}");
 
                 return Ok(response);
             }
@@ -78,7 +78,7 @@ namespace DevWebSecDemo.WebAPI.Controllers
             {
                 // VULNERABILITY: Detailed error messages reveal if username exists
                 // This allows attackers to enumerate valid usernames
-                _logger.LogWarning($"✗ Failed login attempt for user: {userIdentity.Username} - {e.Message}");
+                _logger.LogWarning($"Failed login attempt for user: {userIdentity.Username} - {e.Message}");
                 
                 return Unauthorized(new { message = e.Message });
             }

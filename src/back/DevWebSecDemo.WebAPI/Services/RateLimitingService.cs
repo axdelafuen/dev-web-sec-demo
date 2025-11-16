@@ -74,5 +74,38 @@ namespace DevWebSecDemo.WebAPI.Services
 
             return _maxAttemptsPerWindow;
         }
+
+        /// <summary>
+        /// Reset rate limiting for a specific identifier
+        /// </summary>
+        public void Reset(string identifier)
+        {
+            _attemptLog.TryRemove(identifier, out _);
+        }
+
+        /// <summary>
+        /// Reset all rate limiting counters
+        /// </summary>
+        public void ResetAll()
+        {
+            _attemptLog.Clear();
+        }
+
+        /// <summary>
+        /// Get time remaining until rate limit expires
+        /// </summary>
+        public TimeSpan GetTimeRemaining(string identifier)
+        {
+            CleanOldAttempts(identifier);
+
+            if (_attemptLog.TryGetValue(identifier, out var attempts) && attempts.Count > 0)
+            {
+                var oldestAttempt = attempts.Min();
+                var timeUntilExpiry = oldestAttempt.Add(_timeWindow) - DateTime.UtcNow;
+                return timeUntilExpiry > TimeSpan.Zero ? timeUntilExpiry : TimeSpan.Zero;
+            }
+
+            return TimeSpan.Zero;
+        }
     }
 }

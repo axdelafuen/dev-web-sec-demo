@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,14 +11,14 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './vulnerable-login.component.html',
   styleUrls: ['./vulnerable-login.component.css']
 })
-export class VulnerableLoginComponent {
+export class VulnerableLoginComponent implements OnInit {
   username: string = '';
   password: string = '';
   errorMessage: string = '';
   successMessage: string = '';
   isLoading: boolean = false;
   attemptCount: number = 0;
-  logs: string[] = [];
+  logs: { type: 'info' | 'success' | 'error', message: string }[] = [];
 
   regUsername: string = '';
   regPassword: string = '';
@@ -26,12 +26,32 @@ export class VulnerableLoginComponent {
   registerSuccess: string = '';
   isRegisterLoading: boolean = false;
 
+  passwords: string[] = [];
+  isLoadingPasswords: boolean = false;
+
   private apiUrl = 'http://localhost:8080/api/vulnerable';
 
   constructor(
     private http: HttpClient,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    this.loadPasswords();
+  }
+
+  loadPasswords(): void {
+    this.http.get('assets/100k-most-used-passwords-NCSC.txt', { responseType: 'text' }).subscribe({
+      next: (data) => {
+        this.passwords = data.split('\n').filter(p => p.trim().length > 0);
+        console.log(`Loaded ${this.passwords.length} passwords`);
+      },
+      error: (error) => {
+        console.error('Failed to load passwords:', error);
+        this.passwords = ['123456', 'password', '123', 'admin', 'qwerty', '12345', 'letmein'];
+      }
+    });
+  }
 
   onSubmit(): void {
     if (!this.username || !this.password) {
@@ -56,38 +76,49 @@ export class VulnerableLoginComponent {
       next: (response: any) => {
         this.isLoading = false;
         this.successMessage = 'Login successful';
-        this.addLog(`[${timestamp}] SUCCESS - Token received`);
+        this.addLog(`[${timestamp}] SUCCESS - Token received`, 'success');
         console.log('Login successful:', response);
       },
       error: (error) => {
         this.isLoading = false;
         // VULNERABILITY: Detailed error messages are displayed
         this.errorMessage = error.error?.message || 'Connection error';
-        this.addLog(`[${timestamp}] FAILED - ${error.error?.message || 'Error'}`);
+        this.addLog(`[${timestamp}] FAILED - ${error.error?.message || 'Error'}`, 'error');
       }
     });
   }
 
   bruteForce(): void {
+    if (this.passwords.length === 0) {
+      this.errorMessage = 'Passwords not loaded yet';
+      return;
+    }
+
     this.errorMessage = '';
     this.successMessage = '';
     this.addLog('=== BRUTE FORCE START ===');
+    this.addLog(`Testing ${Math.min(100, this.passwords.length)} passwords...`);
     
-    const commonPasswords = ['123456', 'password', '123', 'admin', 'qwerty', '12345', 'letmein'];
+    // Use first 100 passwords for demo
+    const passwordsToTest = this.passwords.slice(0, 100);
     let delay = 0;
 
-    commonPasswords.forEach((pwd, index) => {
+    passwordsToTest.forEach((pwd, index) => {
       setTimeout(() => {
         this.password = pwd;
         this.onSubmit();
       }, delay);
-      delay += 500; // 500ms between attempts
     });
   }
 
-  private addLog(message: string): void {
-    this.logs.unshift(message);
-    if (this.logs.length > 20) {
+  showPasswordsInfo(): void {
+    this.addLog(`First 10 passwords: ${this.passwords.slice(0, 10).join(', ')}`);
+    console.log('All passwords:', this.passwords, '(check browser console for full list)');
+  }
+
+  private addLog(message: string, type: 'info' | 'success' | 'error' = 'info'): void {
+    this.logs.unshift({ type, message });
+    if (this.logs.length > 100) {
       this.logs.pop();
     }
   }

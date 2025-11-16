@@ -18,7 +18,7 @@ export class SecureLoginComponent implements OnInit {
   successMessage: string = '';
   isLoading: boolean = false;
   attemptCount: number = 0;
-  logs: string[] = [];
+  logs: { type: 'info' | 'success' | 'error', message: string }[] = [];
   isLocked: boolean = false;
   remainingAttempts: number = 5;
   lockoutMinutes: number = 0;
@@ -29,6 +29,9 @@ export class SecureLoginComponent implements OnInit {
   registerSuccess: string = '';
   isRegisterLoading: boolean = false;
 
+  passwords: string[] = [];
+  isLoadingPasswords: boolean = false;
+
   private apiUrl = 'http://localhost:8080/api/secure';
 
   constructor(
@@ -38,6 +41,20 @@ export class SecureLoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkLockoutStatus();
+    this.loadPasswords();
+  }
+
+  loadPasswords(): void {
+    this.http.get('assets/100k-most-used-passwords-NCSC.txt', { responseType: 'text' }).subscribe({
+      next: (data) => {
+        this.passwords = data.split('\n').filter(p => p.trim().length > 0);
+        console.log(`Loaded ${this.passwords.length} passwords`);
+      },
+      error: (error) => {
+        console.error('Failed to load passwords:', error);
+        this.passwords = ['123456', 'password', '123', 'admin', 'qwerty', '12345', 'letmein'];
+      }
+    });
   }
 
   checkLockoutStatus(): void {
@@ -78,7 +95,7 @@ export class SecureLoginComponent implements OnInit {
       next: (response: any) => {
         this.isLoading = false;
         this.successMessage = 'Login successful';
-        this.addLog(`[${timestamp}] SUCCESS - Authenticated`);
+        this.addLog(`[${timestamp}] SUCCESS - Authenticated`, 'success');
         this.remainingAttempts = 5;
         console.log('Login successful:', response);
       },
@@ -87,12 +104,12 @@ export class SecureLoginComponent implements OnInit {
         this.errorMessage = error.error?.message || 'Connection error';
         
         if (error.status === 429) {
-          this.addLog(`[${timestamp}] BLOCKED - Rate limit exceeded`);
+          this.addLog(`[${timestamp}] BLOCKED - Rate limit exceeded`, 'error');
         } else if (this.errorMessage.includes('locked')) {
-          this.addLog(`[${timestamp}] LOCKED - Account temporarily locked`);
+          this.addLog(`[${timestamp}] LOCKED - Account temporarily locked`, 'error');
           this.isLocked = true;
         } else {
-          this.addLog(`[${timestamp}] FAILED - Generic error`);
+          this.addLog(`[${timestamp}] FAILED - ${error.error?.message || 'Error'}`, 'error');
         }
 
         // Update lockout status
@@ -102,25 +119,36 @@ export class SecureLoginComponent implements OnInit {
   }
 
   bruteForce(): void {
+    if (this.passwords.length === 0) {
+      this.errorMessage = 'Passwords not loaded yet';
+      return;
+    }
+
     this.errorMessage = '';
     this.successMessage = '';
     this.addLog('=== BRUTE FORCE ATTEMPT ===');
+    this.addLog(`Testing ${Math.min(100, this.passwords.length)} passwords...`);
     
-    const commonPasswords = ['123456', 'password', '123', 'admin', 'qwerty', '12345', 'letmein'];
+    // Use first 100 passwords for demo
+    const passwordsToTest = this.passwords.slice(0, 100);
     let delay = 0;
 
-    commonPasswords.forEach((pwd, index) => {
+    passwordsToTest.forEach((pwd, index) => {
       setTimeout(() => {
         this.password = pwd;
         this.onSubmit();
       }, delay);
-      delay += 500;
     });
   }
 
-  private addLog(message: string): void {
-    this.logs.unshift(message);
-    if (this.logs.length > 20) {
+  showPasswordsInfo(): void {
+    this.addLog(`First 10 passwords: ${this.passwords.slice(0, 10).join(', ')}`);
+    console.log('All passwords:', this.passwords, '(check browser console for full list)');
+  }
+
+  private addLog(message: string, type: 'info' | 'success' | 'error' = 'info'): void {
+    this.logs.unshift({ type, message });
+    if (this.logs.length > 100) {
       this.logs.pop();
     }
   }

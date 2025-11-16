@@ -169,6 +169,26 @@ namespace DevWebSecDemo.WebAPI.Controllers
             });
         }
 
+        /// <summary>
+        /// Get IP rate limit status for demonstration purposes
+        /// </summary>
+        [HttpGet("ip-status")]
+        public ActionResult GetIpStatus()
+        {
+            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var isRateLimited = _rateLimitingService.IsRateLimited(clientIp);
+            var remainingAttempts = _rateLimitingService.GetRemainingAttempts(clientIp);
+            var timeRemaining = _rateLimitingService.GetTimeRemaining(clientIp);
+
+            return Ok(new
+            {
+                clientIp,
+                isRateLimited,
+                remainingAttempts,
+                timeRemainingMinutes = timeRemaining.TotalMinutes
+            });
+        }
+
         private bool IsPasswordStrong(string password)
         {
             if (string.IsNullOrWhiteSpace(password) || password.Length < 8)

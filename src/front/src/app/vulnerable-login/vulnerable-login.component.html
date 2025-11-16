@@ -54,10 +54,18 @@
           <button 
             type="button"
             (click)="bruteForce()"
-            [disabled]="isLoading || !username"
+            [disabled]="isLoading || !username || passwords.length === 0"
             class="btn btn-warning"
           >
             Test Brute Force
+          </button>
+
+          <button 
+            type="button"
+            (click)="showPasswordsInfo()"
+            class="btn btn-info"
+          >
+            Show Passwords ({{ passwords.length }})
           </button>
         </div>
       </form>
@@ -113,8 +121,11 @@
       </div>
       
       <div class="logs-container">
-        <div *ngFor="let log of logs" class="log-entry" [class.log-success]="log.includes('✓')" [class.log-error]="log.includes('✗')">
-          {{ log }}
+        <div *ngFor="let log of logs" class="log-entry" 
+             [class.log-info]="log.type === 'info'" 
+             [class.log-success]="log.type === 'success'" 
+             [class.log-error]="log.type === 'error'">
+          {{ log.message }}
         </div>
         <div *ngIf="logs.length === 0" class="log-empty">
           No activity yet

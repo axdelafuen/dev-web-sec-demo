@@ -191,6 +191,18 @@ input:disabled {
   color: white;
 }
 
+.btn-info {
+  background: white;
+  color: #2196f3;
+  border: 2px solid #2196f3;
+  flex: 0.5;
+}
+
+.btn-info:hover:not(:disabled) {
+  background: #2196f3;
+  color: white;
+}
+
 .register-section {
   margin-top: 30px;
   padding-top: 30px;
@@ -297,14 +309,23 @@ code {
   background: white;
 }
 
+.log-info {
+  border-left-color: #666;
+  color: #666;
+}
+
 .log-success {
   border-left-color: #4caf50;
   background: #f1f8f4;
+  color: #4caf50;
+  font-weight: 500;
 }
 
 .log-error {
   border-left-color: #f44336;
   background: #fff5f5;
+  color: #f44336;
+  font-weight: 500;
 }
 
 .log-blocked {

@@ -108,6 +108,14 @@ namespace DevWebSecDemo.WebAPI.Services
 
             return TimeSpan.Zero;
         }
+
+        /// <summary>
+        /// Reset all account lockouts
+        /// </summary>
+        public void ResetAll()
+        {
+            _lockoutInfo.Clear();
+        }
     }
 
     public class AccountLockoutInfo
