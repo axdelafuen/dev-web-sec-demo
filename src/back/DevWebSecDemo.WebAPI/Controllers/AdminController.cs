@@ -67,5 +67,43 @@ namespace DevWebSecDemo.WebAPI.Controllers
             
             return Ok(new { message = $"Account lockout reset for {username}" });
         }
+
+        /// <summary>
+        /// Get lockout status for demonstration purposes
+        /// </summary>
+        [HttpGet("lockout-status/{username}")]
+        public ActionResult GetLockoutStatus(string username)
+        {
+            var isLocked = _accountLockoutService.IsLockedOut(username);
+            var remainingAttempts = _accountLockoutService.GetRemainingAttempts(username);
+            var lockoutTime = _accountLockoutService.GetLockoutTimeRemaining(username);
+
+            return Ok(new
+            {
+                isLocked,
+                remainingAttempts,
+                lockoutMinutesRemaining = lockoutTime.TotalMinutes
+            });
+        }
+
+        /// <summary>
+        /// Get IP rate limit status for demonstration purposes
+        /// </summary>
+        [HttpGet("ip-status")]
+        public ActionResult GetIpStatus()
+        {
+            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var isRateLimited = _rateLimitingService.IsRateLimited(clientIp);
+            var remainingAttempts = _rateLimitingService.GetRemainingAttempts(clientIp);
+            var timeRemaining = _rateLimitingService.GetTimeRemaining(clientIp);
+
+            return Ok(new
+            {
+                clientIp,
+                isRateLimited,
+                remainingAttempts,
+                timeRemainingMinutes = timeRemaining.TotalMinutes
+            });
+        }
     }
 }

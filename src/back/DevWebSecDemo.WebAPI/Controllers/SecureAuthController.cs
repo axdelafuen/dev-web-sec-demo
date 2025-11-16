@@ -32,7 +32,7 @@ namespace DevWebSecDemo.WebAPI.Controllers
         }
 
         /// <summary>
-        /// SECURE: Register endpoint with strong password policy
+        /// Register endpoint with strong password policy
         /// </summary>
         [HttpPost("register")]
         [ProducesResponseType<IActionResult>(StatusCodes.Status200OK)]
@@ -40,7 +40,6 @@ namespace DevWebSecDemo.WebAPI.Controllers
         {
             try
             {
-                // SECURITY: Validate password strength
                 if (!IsPasswordStrong(registration.Password))
                 {
                     return BadRequest(new { message = "Password must be at least 8 characters with uppercase, lowercase, number, and special character" });
@@ -48,20 +47,18 @@ namespace DevWebSecDemo.WebAPI.Controllers
 
                 await _userService.CreateUserAsync(registration.Username, registration.Password, cancellationToken);
 
-                // SECURITY: Generic success message
                 _logger.LogInformation("New user registration successful");
                 return Ok(new { message = "Registration successful" });
             }
             catch (Exception)
             {
-                // SECURITY: Generic error message - no details leaked
                 _logger.LogWarning("Registration attempt failed");
                 return BadRequest(new { message = "Registration failed. Please try again." });
             }
         }
 
         /// <summary>
-        /// SECURE: Login endpoint with multiple security layers
+        /// Login endpoint with multiple security layers
         /// </summary>
         [HttpPost("login")]
         [ProducesResponseType<TokenResponse>(StatusCodes.Status200OK)]
@@ -69,14 +66,12 @@ namespace DevWebSecDemo.WebAPI.Controllers
         {
             var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
-            // SECURITY: Rate limiting check
             if (_rateLimitingService.IsRateLimited(clientIp))
             {
                 _logger.LogWarning($"Rate limit exceeded for IP: {clientIp}");
                 return StatusCode(429, new { message = "Too many attempts. Please try again later." });
             }
 
-            // SECURITY: Account lockout check
             if (_accountLockoutService.IsLockedOut(loginRequest.Username))
             {
                 var lockoutTime = _accountLockoutService.GetLockoutTimeRemaining(loginRequest.Username);
@@ -88,7 +83,6 @@ namespace DevWebSecDemo.WebAPI.Controllers
             {
                 await _userService.IsCredentialsValidAsync(loginRequest.Username, loginRequest.Password, cancellationToken);
 
-                // SECURITY: Reset failed attempts on successful login
                 _accountLockoutService.ResetFailedAttempts(loginRequest.Username);
 
                 var response = new TokenResponse
@@ -97,20 +91,17 @@ namespace DevWebSecDemo.WebAPI.Controllers
                     Expires = DateTime.UtcNow.AddDays(1),
                 };
 
-                // SECURITY: Log success without sensitive details
                 _logger.LogInformation($"Successful authentication from IP: {clientIp}");
 
                 return Ok(response);
             }
             catch (ArgumentException)
             {
-                // SECURITY: Track failed attempt
                 _accountLockoutService.RecordFailedAttempt(loginRequest.Username);
                 _rateLimitingService.RecordAttempt(clientIp);
 
                 var remainingAttempts = _accountLockoutService.GetRemainingAttempts(loginRequest.Username);
 
-                // SECURITY: Generic error message - doesn't reveal if username exists
                 _logger.LogWarning($"Failed authentication attempt from IP: {clientIp}");
 
                 if (remainingAttempts > 0)
@@ -124,72 +115,7 @@ namespace DevWebSecDemo.WebAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// SECURE: Password reset with consistent responses
-        /// </summary>
-        [HttpPost("forgot-password")]
-        [ProducesResponseType<IActionResult>(StatusCodes.Status200OK)]
-        public ActionResult ForgotPassword([FromBody] ForgotPasswordRequest request)
-        {
-            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-            // SECURITY: Rate limiting on password reset
-            if (_rateLimitingService.IsRateLimited(clientIp))
-            {
-                return StatusCode(429, new { message = "Too many requests. Please try again later." });
-            }
-
-            _rateLimitingService.RecordAttempt(clientIp);
-
-            if (string.IsNullOrWhiteSpace(request.Username))
-            {
-                return BadRequest(new { message = "Username is required" });
-            }
-
-            // SECURITY: Always return same message (prevents username enumeration)
-            _logger.LogInformation($"Password reset requested from IP: {clientIp}");
-            return Ok(new { message = "If the username exists, a password reset link has been sent." });
-        }
-
-        /// <summary>
-        /// Get lockout status for demonstration purposes
-        /// </summary>
-        [HttpGet("lockout-status/{username}")]
-        public ActionResult GetLockoutStatus(string username)
-        {
-            var isLocked = _accountLockoutService.IsLockedOut(username);
-            var remainingAttempts = _accountLockoutService.GetRemainingAttempts(username);
-            var lockoutTime = _accountLockoutService.GetLockoutTimeRemaining(username);
-
-            return Ok(new
-            {
-                isLocked,
-                remainingAttempts,
-                lockoutMinutesRemaining = lockoutTime.TotalMinutes
-            });
-        }
-
-        /// <summary>
-        /// Get IP rate limit status for demonstration purposes
-        /// </summary>
-        [HttpGet("ip-status")]
-        public ActionResult GetIpStatus()
-        {
-            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            var isRateLimited = _rateLimitingService.IsRateLimited(clientIp);
-            var remainingAttempts = _rateLimitingService.GetRemainingAttempts(clientIp);
-            var timeRemaining = _rateLimitingService.GetTimeRemaining(clientIp);
-
-            return Ok(new
-            {
-                clientIp,
-                isRateLimited,
-                remainingAttempts,
-                timeRemainingMinutes = timeRemaining.TotalMinutes
-            });
-        }
-
-        private bool IsPasswordStrong(string password)
+        private static bool IsPasswordStrong(string password)
         {
             if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
                 return false;

@@ -25,7 +25,7 @@ namespace DevWebSecDemo.WebAPI.Controllers
         }
 
         /// <summary>
-        /// VULNERABLE: Register endpoint with weak password policy
+        /// Register endpoint with weak password policy
         /// </summary>
         [HttpPost("register")]
         [ProducesResponseType<IActionResult>(StatusCodes.Status200OK)]
@@ -33,26 +33,23 @@ namespace DevWebSecDemo.WebAPI.Controllers
         {
             try
             {
-                // VULNERABILITY: No password strength validation
                 if (string.IsNullOrWhiteSpace(userIdentity.Username) || string.IsNullOrWhiteSpace(userIdentity.Password))
                 {
                     return BadRequest("Username and password are required");
                 }
 
-                // VULNERABILITY: Allows weak passwords like "123"
                 await _userService.CreateUserAsync(userIdentity.Username, userIdentity.Password, cancellationToken);
                 
                 return Ok(new { message = "User created successfully" });
             }
             catch (Exception e)
             {
-                // VULNERABILITY: Detailed error messages
                 return BadRequest(new { message = e.Message });
             }
         }
 
         /// <summary>
-        /// VULNERABLE: Login endpoint susceptible to brute force
+        /// Login endpoint susceptible to brute force
         /// </summary>
         [HttpPost("login")]
         [ProducesResponseType<TokenResponse>(StatusCodes.Status200OK)]
@@ -60,7 +57,6 @@ namespace DevWebSecDemo.WebAPI.Controllers
         {
             try
             {
-                // VULNERABILITY: No rate limiting or attempt tracking
                 await _userService.IsCredentialsValidAsync(userIdentity.Username, userIdentity.Password, cancellationToken);
 
                 var response = new TokenResponse
@@ -69,39 +65,16 @@ namespace DevWebSecDemo.WebAPI.Controllers
                     Expires = DateTime.UtcNow.AddDays(1),
                 };
 
-                // Log success with detailed info (visible in demo)
                 _logger.LogInformation($"Successful login for user: {userIdentity.Username}");
 
                 return Ok(response);
             }
             catch (ArgumentException e)
             {
-                // VULNERABILITY: Detailed error messages reveal if username exists
-                // This allows attackers to enumerate valid usernames
                 _logger.LogWarning($"Failed login attempt for user: {userIdentity.Username} - {e.Message}");
                 
                 return Unauthorized(new { message = e.Message });
             }
-        }
-
-        /// <summary>
-        /// VULNERABLE: Allows unlimited password reset requests
-        /// </summary>
-        [HttpPost("forgot-password")]
-        [ProducesResponseType<IActionResult>(StatusCodes.Status200OK)]
-        public ActionResult ForgotPassword([FromBody] ForgotPasswordRequest request)
-        {
-            // VULNERABILITY: No rate limiting, allows email enumeration
-            _logger.LogInformation($"Password reset requested for: {request.Username}");
-            
-            // VULNERABILITY: Different responses based on username existence
-            if (string.IsNullOrWhiteSpace(request.Username))
-            {
-                return BadRequest(new { message = "Username is required" });
-            }
-
-            // Simulate checking if user exists (reveals information)
-            return Ok(new { message = $"If user '{request.Username}' exists, a reset link will be sent" });
         }
     }
 }
