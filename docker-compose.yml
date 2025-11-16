@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:16
+    container_name: devwebsecdemo-postgres
+    environment:
+      POSTGRES_DB: devwebsecdemo
+      POSTGRES_USER: devwebsecdemo
+      POSTGRES_PASSWORD: devwebsecdemo@123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - devwebsecdemo-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devwebsecdemo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Backend .NET
+  api:
+    build:
+      context: ./src/back
+      dockerfile: DevWebSecDemo.WebAPI/Dockerfile
+    container_name: devwebsecdemo-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=devwebsecdemo;Username=devwebsecdemo;Password=devwebsecdemo@123
+      - Jwt__SecretKey=aopiryazporiyaporahporyaproayrpayrparyardiofhepvntypziovnrotdigvhnoisruyghvnoicvnzpeoh
+      - Jwt__Issuer=dev-web-sec-demo
+      - Jwt__Audience=admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - devwebsecdemo-network
+    restart: unless-stopped
+
+  # Frontend Angular
+  front:
+    build:
+      context: ./src/front
+      dockerfile: Dockerfile
+    container_name: devwebsecdemo-front
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - devwebsecdemo-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+
+networks:
+  devwebsecdemo-network:
+    driver: bridge
