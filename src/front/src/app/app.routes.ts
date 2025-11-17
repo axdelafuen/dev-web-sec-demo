@@ -13,5 +13,9 @@ export const routes: Routes = [
   { 
     path: 'secure-login', 
     loadComponent: () => import('./secure-login/secure-login.component').then(m => m.SecureLoginComponent) 
+  },
+  { 
+    path: 'connected', 
+    loadComponent: () => import('./connected/connected.component').then(m => m.ConnectedComponent) 
   }
 ];

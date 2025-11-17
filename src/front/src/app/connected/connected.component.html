@@ -1,0 +1,7 @@
+<div class="container">
+  <div class="connected-panel" *ngIf="isAuthenticated">
+    <h1>Welcome!</h1>
+    <p class="message">You are successfully authenticated.</p>
+    <button class="btn-logout" (click)="logout()">Logout</button>
+  </div>
+</div>

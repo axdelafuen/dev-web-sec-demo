@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -33,7 +33,8 @@ export class VulnerableLoginComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
@@ -78,6 +79,11 @@ export class VulnerableLoginComponent implements OnInit {
         this.successMessage = 'Login successful';
         this.addLog(`[${timestamp}] SUCCESS - Token received`, 'success');
         console.log('Login successful:', response);
+        
+        if (isPlatformBrowser(this.platformId) && response.token && response.expires) {
+          localStorage.setItem('authToken', response.token);
+          localStorage.setItem('tokenExpiration', response.expires);
+        }
       },
       error: (error) => {
         this.isLoading = false;

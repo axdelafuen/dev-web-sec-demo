@@ -55,6 +55,15 @@ POST /api/secure/register
 POST /api/secure/login
 ```
 
+## Session vulnerabilty
+
+Get a valid token, and paste in browser console:
+
+```js
+localStorage.setItem('authToken', "{validToken}");
+localStorage.setItem('tokenExpiration', new Date(Date.now() + 86400000).toISOString());
+```
+
 ## Architecture
 
 **Backend:** .NET 9 + ASP.NET Core + PostgreSQL + JWT
@@ -65,8 +74,8 @@ POST /api/secure/login
 
 ## Resources
 
-- [OWASP Top 10 2021](https://owasp.org/Top10/)
 - [A07:2021 – Identification and Authentication Failures](https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/)
+- [100k-most-used-passwords-NCSC.txt](https://github.com/danielmiessler/SecLists/blob/master/Passwords/Common-Credentials/100k-most-used-passwords-NCSC.txt)
 
 ## Author
 
